@@ -41,13 +41,21 @@ class Settings(BaseSettings):
     frontend_port: int = 5173
     vite_backend_url: str = "http://backend:8000"
 
-    # Embedding & Retrieval Settings (Milestone 2)
+    # Embedding & Retrieval Settings (Milestone 2 & Topic-Aware Retrieval)
     embedding_provider: str = "ollama"
     ollama_base_url: str = "http://localhost:11434"
     ollama_embedding_model: str = "nomic-embed-text"
     embedding_dim: int = 768
-    retrieval_top_k: int = 5
+    retrieval_top_k: int = 4
     retrieval_similarity_threshold: Optional[float] = None
+    retrieval_candidate_pool: int = 25
+    min_vector_similarity: float = 0.12
+    min_composite_relevance: float = 0.28
+    max_evidence_chunks: int = 4
+    min_relevant_sources: int = 1
+    enable_reranking: bool = True
+    enable_lexical_hybrid: bool = True
+    enable_llm_reranking: bool = False
     data_dir: str = "data/transcripts"
     chunk_size: int = 800
     chunk_overlap: int = 150

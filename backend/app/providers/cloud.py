@@ -248,17 +248,17 @@ class MockLLMProvider(BaseLLMProvider):
             u_text = u_match.group(1).lower().strip() if u_match else prompt.lower()
             if any(w in u_text for w in ["hi", "hello", "hey", "how are you", "who are you", "what can you do", "thanks", "thank you", "help"]):
                 return LLMResponse(content="CONVERSATION", provider=self.provider_name, model=self.model_name)
-            return LLMResponse(content="RETRIEVE", provider=self.provider_name, model=self.model_name)
+        # Dynamic source extraction from prompt
+        sources_found = re.findall(r'\[\d+\]\s*Source:\s*"([^"]+)"(?:\s*with\s*([^\n(]+))?', prompt)
+        formatted_citations = []
+        for title, guest in sources_found:
+            g_str = f" with {guest.strip()}" if guest and guest.strip() else ""
+            formatted_citations.append(f"\"{title.strip()}\"{g_str}")
 
-        source_match = re.search(r'Source:\s*"([^"]+)"\s*(?:with\s*([^\n(]+))?', prompt)
-        if source_match:
-            cited_title = source_match.group(1).strip()
-            guest_part = f" with {source_match.group(2).strip()}" if source_match.group(2) else ""
-            source_attribution = f"**{cited_title}**{guest_part}"
-        else:
-            source_attribution = "the ingested podcast transcripts"
+        primary_citation = formatted_citations[0] if formatted_citations else "the available transcripts"
+        all_citations_str = ", ".join(formatted_citations) if formatted_citations else primary_citation
 
-        # Extract user question from prompt if formatted with User Question:
+        # Extract user question from prompt
         q_match = re.search(r"User Question:\s*(.+)", prompt, re.DOTALL)
         question_text = q_match.group(1).lower().strip() if q_match else prompt.lower().strip()
 
@@ -277,66 +277,115 @@ class MockLLMProvider(BaseLLMProvider):
 
         if is_how_are_you:
             content = (
-                "I'm doing great, thanks for asking! 😊 Ready to explore some product strategy, growth tactics, or frameworks from Lenny's Podcast whenever you are. What are you working on today?"
+                "I'm doing great, thanks for asking! 😊 Ready to explore product strategy, user activation, retention curves, or experimentation frameworks from Lenny's Podcast whenever you are. What are you working on today?"
             )
         elif is_thanks:
             content = (
-                "You're very welcome! Let me know if you'd like to dig deeper into any specific episode insights or generate an artifact."
+                "You're very welcome! Let me know if you'd like to dig deeper into any specific episode insights or generate a prioritized plan."
             )
         elif is_greeting:
             content = (
                 "Hey there! 👋 I'm **The Lenny Growth Assistant**.\n\n"
                 "I'm here to help you solve product and growth challenges, grounded in real wisdom from over 270 Lenny's Podcast episodes.\n\n"
                 "You can ask me questions like:\n"
-                "- *What are the three components of activation?*\n"
-                "- *How do I set up sustainable growth loops instead of linear funnels?*\n"
-                "- *What are the leading indicators of Product-Market Fit?*\n\n"
-                "You can also select a specialized mode pill below to generate **Growth Action Plans**, **Ship 30 Essays**, or **Checklists**.\n\n"
+                "- *What are the most important lessons from Lenny's Podcast about improving user activation?*\n"
+                "- *How do I know if I have product-market fit?*\n"
+                "- *Create a prioritized experiment plan to improve onboarding.*\n\n"
                 "What product or growth challenge are you tackling today?"
             )
-        elif "growth loop" in question_text or "loops" in question_text:
-            content = (
-                f"Based on insights from {source_attribution}, growth loops generate compounding acquisition and retention. "
-                "Unlike linear funnels that require continuous top-of-funnel spend, loops ensure each cohort creates the fuel "
-                "for subsequent cohorts through product usage, viral advocacy, or content generation."
+        # Transparent limitation check for substantive queries with no evidence
+        elif (not sources_found and "no transcripts retrieved" in prompt.lower()) or "quantum physics" in question_text or "unsupported" in question_text:
+            return LLMResponse(
+                content=(
+                    "I searched the transcript repository, but could not find sufficient evidence or discussion on this topic in the available transcripts. "
+                    "My knowledge base is focused on Lenny's Podcast and Newsletter insights covering product strategy, user activation, "
+                    "retention curves, growth loops, and experimentation. "
+                    "Could you reframe your question around one of these product areas, or ask about a specific growth challenge you are facing?"
+                ),
+                provider=self.provider_name,
+                model=self.model_name,
             )
-        elif "retention" in question_text or "cohort" in question_text:
+        elif "experiment plan" in question_text or ("prioritize" in question_text and "experiment" in question_text):
             content = (
-                f"According to {source_attribution}, retention is the bedrock "
-                "of sustainable growth. Rather than relying on linear funnels, successful teams build growth loops where existing cohorts "
-                "generate inputs that acquire and activate subsequent cohorts (via viral, content, or reinvestment loops)."
+                "### Activation Definition and Assumptions\n"
+                "Activation is defined as guiding a new signup swiftly to their first core value experience. We assume the user journey consists of:\n"
+                "1. **Setup Moment**: Essential configuration completed without non-critical friction.\n"
+                "2. **Aha! Moment**: The immediate emotional realization of the product's value proposition.\n"
+                "3. **Habit Moment**: Returning within the natural product cadence to establish an ongoing usage loop.\n\n"
+                f"### Relevant Evidence from Sources\n"
+                f"Based on evidence from {all_citations_str}:\n"
+                "- Onboarding is the highest leverage area for sustainable retention because drop-offs in early stages compound negatively throughout the lifecycle.\n"
+                "- Minimizing harmful cognitive friction while preserving intentional customization directly boosts first-session completion rates.\n\n"
+                "### Prioritized Experiment Backlog\n"
+                "| Priority | Experiment | Hypothesis | Impact (1-5) | Confidence (1-5) | Effort (1-5) | Primary Metric |\n"
+                "| :--- | :--- | :--- | :---: | :---: | :---: | :--- |\n"
+                "| **P0** | Streamlined Time-to-Aha | Removing secondary profile questions will increase immediate setup completion | 5 | 4 | 2 | Setup Completion Rate |\n"
+                "| **P1** | Contextual Action Checklists | Presenting a clear 3-step progress checklist increases user milestone achievement | 4 | 4 | 2 | Aha! Moment Rate |\n"
+                "| **P2** | Role-Based First-Run Routing | Asking user intent on screen 1 tailors templates to immediate user needs | 4 | 3 | 3 | Day-7 Retention |\n\n"
+                "### Experiment Details\n"
+                "- **Target Users**: All new organic and referral signups.\n"
+                "- **Proposed Change**: Replace the legacy 5-step registration gate with a 2-step setup directing straight into the core workspace.\n"
+                "- **Control & Variant**: Control displays full setup modal; Variant delivers instant template loading with dismissible guidance.\n"
+                "- **Primary Metric**: Time-to-value (minutes from signup to first completed item).\n"
+                "- **Secondary Metrics**: Day-1 and Day-7 retention cohort percentages.\n"
+                "- **Guardrails**: Form completion integrity and support request rate.\n"
+                "- **Success Criteria**: Relative increase of >= 12% in Day-7 active users with p < 0.05.\n\n"
+                "### Recommended Execution Order\n"
+                "1. **Week 1-2**: Launch P0 friction elimination experiment to establish clean baseline.\n"
+                "2. **Week 3-4**: Deploy P1 contextual checklists for activated cohorts.\n"
+                "3. **Week 5-6**: Roll out P2 role-based template customization based on early cohort data."
+            )
+        elif "lesson" in question_text or "activation" in question_text or "onboarding" in question_text:
+            content = (
+                "### Most Important Lessons\n\n"
+                f"- **Lesson 1: Treat Onboarding as the Bedrock of Long-Term Retention**\n"
+                f"  - *Explanation*: In {primary_citation}, the evidence highlights that onboarding drop-off is fatal to product growth. If users fail to see value in the first session, no downstream marketing or email campaigns can recover them.\n"
+                "  - *Why it matters*: Retention curves flatten or plunge based almost entirely on early user trajectory.\n"
+                "  - *Practical implication*: Focus initial growth engineering sprints on eliminating early cognitive barriers rather than building top-of-funnel acquisition loops.\n"
+                f"  - *Citation*: Source: {primary_citation}\n\n"
+                f"- **Lesson 2: Clearly Differentiate Harmful Friction from Intentional Friction**\n"
+                f"  - *Explanation*: Transcripts from {all_citations_str} emphasize that not all friction is bad. Intentional friction (e.g. asking for user goals, team size, or use cases) allows the product to route users to personalized aha moments.\n"
+                "  - *Why it matters*: Prematurely dropping users into an empty, generic canvas leads to paralysis.\n"
+                "  - *Practical implication*: Strip away mechanical password and verification friction, but preserve questions that personalize the workspace.\n"
+                f"  - *Citation*: Source: {all_citations_str}\n\n"
+                "- **Lesson 3: Establish a Clear Milestone Progression (Setup -> Aha! Moment -> Habit Moment)**\n"
+                f"  - *Explanation*: Grounded evidence demonstrates that activation is not a single binary event, but a graduated sequence from baseline setup configuration to the emotional eureka Aha! Moment, followed by recurring habit loops.\n"
+                "  - *Why it matters*: Measuring only account creation masks severe activation drop-offs.\n"
+                "  - *Practical implication*: Instrument separate telemetry events for Setup, Aha, and Habit moments and track cohort velocity between each step.\n"
+                f"  - *Citation*: Source: {primary_citation}\n\n"
+                "### Evidence Limitations\n"
+                "The available transcripts provide detailed strategic frameworks on onboarding friction and milestone definitions; however, specific platform technical constraints (e.g. third-party OAuth provider timeouts) are not discussed in the corpus and represent general implementation recommendations."
             )
         elif "pmf" in question_text or "product-market fit" in question_text:
             content = (
-                f"As discussed in {source_attribution}, key signals of product-market fit include:\n"
-                "- The Sean Ellis 40% 'very disappointed' survey threshold.\n"
-                "- Flattening cohort retention curves over 3-6 months.\n"
-                "- Spontaneous organic word-of-mouth velocity and strong user advocacy."
-            )
-        elif "activation" in question_text or "onboarding" in question_text:
-            content = (
-                f"Based on the transcript evidence from {source_attribution}, "
-                "activation requires guiding new users to three sequential milestones:\n\n"
-                "1. **The Setup Moment**: Required baseline configuration (e.g. inviting teammates, installing integrations).\n"
-                "2. **The Aha! Moment**: The first moment they experience value directly.\n"
-                "3. **The Habit Moment**: Recurring frequency of usage aligned with natural product cadence.\n\n"
-                "The evidence emphasizes eliminating harmful friction while preserving intentional friction that customizes the user journey."
-            )
-        elif "quantum physics" in question_text or "unsupported" in question_text:
-            content = (
-                "I searched the transcript repository, but could not find sufficient evidence or discussion on this topic. "
-                "My knowledge base is focused on Lenny's Podcast transcripts covering product strategy, activation, "
-                "retention, and growth experimentation. Please ask a product or growth question, or narrow your query."
+                "### Most Important Lessons\n\n"
+                f"- **Lesson 1: True PMF Shows in Flattening Cohort Retention Curves**\n"
+                f"  - *Explanation*: According to {primary_citation}, the single most definitive objective indicator of product-market fit is a cohort retention curve that flattens asymptotically parallel to the x-axis over 3 to 6 months.\n"
+                "  - *Why it matters*: If retention asymptotically degrades to zero, growth spend merely burns capital into a leaky bucket.\n"
+                "  - *Practical implication*: Hold off on scaling paid acquisition or hiring large sales teams until cohort curves demonstrably flatten.\n"
+                f"  - *Citation*: Source: {primary_citation}\n\n"
+                f"- **Lesson 2: Measure Must-Have User Sentiment (The 40% Benchmark)**\n"
+                f"  - *Explanation*: As highlighted in {all_citations_str}, surveying active users with the question 'How would you feel if you could no longer use this product?' provides an early signal; achieving >= 40% responding 'Very Disappointed' strongly correlates with viable PMF.\n"
+                "  - *Why it matters*: High customer satisfaction does not equal indispensability; only genuine distress upon loss signals true fit.\n"
+                "  - *Practical implication*: Regularly poll your core user cohort and double down on the specific segment answering 'Very Disappointed'.\n"
+                f"  - *Citation*: Source: {all_citations_str}\n\n"
+                "### Evidence Limitations\n"
+                "The podcast corpus strongly validates retention curves and customer pull; specific financial burn ratios and investor term negotiations are outside the core transcript evidence."
             )
         else:
             content = (
-                f"Based on the transcript evidence from {source_attribution}, here is the synthesized growth guidance:\n\n"
-                "Focus on concrete metrics, rapid experiment validation, and understanding user feedback loops."
+                "### Most Important Lessons\n\n"
+                f"- **Core Insight**: Based on transcript evidence from {primary_citation}, sustainable growth originates from disciplined prioritization and validated user feedback loops.\n"
+                "  - *Why it matters*: Unfocused execution disperses engineering capacity across low-leverage initiatives.\n"
+                "  - *Practical implication*: Maintain a tight experiment backlog and focus on measurable cohort improvements.\n"
+                f"  - *Citation*: Source: {primary_citation}\n\n"
+                "### Evidence Limitations\n"
+                "Additional tactical nuances beyond the direct transcript evidence represent generalized product methodologies."
             )
 
         return LLMResponse(
             content=content,
             provider=self.provider_name,
             model=self.model_name,
-            token_usage={"prompt_tokens": 120, "completion_tokens": 85, "total_tokens": 205},
+            token_usage={"prompt_tokens": 120, "completion_tokens": 180, "total_tokens": 300},
         )
