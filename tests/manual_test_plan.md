@@ -49,11 +49,15 @@ This test plan provides step-by-step instructions for an evaluator or QA enginee
 ---
 
 ### Test 3: Grounded Conversational Q&A & Evidence Citations
-* **Goal**: Validate transcript evidence grounding and citation transparency.
+* **Goal**: Validate natural conversational interaction for greetings and strict transcript evidence grounding for substantive product questions.
 * **Steps**:
-  1. In the mode selector above the composer, select **"💬 Grounded Q&A"**.
-  2. Submit: *"What does Casey Winters say about activation and retention loops?"*
-  3. Verify the generated response contains specific quotes from Casey Winters.
+  1. **Conversational Greeting Test**: Send *"hi"* or *"hello"*.
+     - Confirm the assistant responds naturally and warmly like a friendly, expert product colleague.
+     - Confirm it briefly introduces its capabilities without citing random podcast chunks.
+     - Confirm **zero citation drawers** appear for casual greetings.
+  2. In the mode selector above the composer, select **"💬 Grounded Q&A"**.
+  3. Submit a substantive question: *"What does Casey Winters say about activation and retention loops?"*
+  4. Verify the generated response contains specific quotes from Casey Winters.
   4. Look below the assistant message: confirm the **Citations Accordion** is present (e.g., *"2 sources cited"*).
   5. Click to expand the citation cards.
   6. Verify:
