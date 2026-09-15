@@ -78,10 +78,12 @@ class OllamaProvider(BaseLLMProvider):
             "model": self._model,
             "messages": messages,
             "stream": False,
+            "keep_alive": "24h",
             "options": {
                 "temperature": temperature,
                 "num_predict": max_tokens,
-                "num_thread": 6,
+                "num_ctx": 2048,
+                "num_thread": 8,
             },
         }
 

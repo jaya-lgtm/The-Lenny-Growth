@@ -89,14 +89,29 @@ class IntentRouter:
     @staticmethod
     def should_retrieve(provider: any, user_message: str) -> bool:
         """
-        Uses an LLM classification prompt to determine whether the user query
-        requires retrieving transcript evidence from Lenny's Podcast, or is a
-        conversational turn (greeting, pleasantry, chit-chat, meta-question).
+        Fast-evaluates whether the query requires factual transcript retrieval.
+        Uses 0ms heuristic pre-filters for 99% of requests so local LLMs don't suffer
+        an extra sequential roundtrip delay.
         """
+        # 1. Obvious conversational turns (greetings, pleasantries, small talk) -> 0ms
         if IntentRouter.is_conversational(user_message):
             return False
 
-        if not provider:
+        # 2. Obvious substantive queries (questions, commands, or length > 3 words) -> 0ms
+        cleaned = user_message.strip().lower()
+        words = cleaned.split()
+        if len(words) > 3 or any(
+            cleaned.startswith(w) for w in [
+                "what", "how", "why", "who", "when", "where", "can", "explain",
+                "tell", "give", "draft", "create", "build", "write", "show",
+                "is ", "are ", "does ", "do ", "difference", "compare", "best",
+            ]
+        ):
+            return True
+
+        # 3. For short ambiguous single/double words, let LLM decide if available
+        if not provider or getattr(provider, "provider_name", "") == "ollama":
+            # On local Ollama, avoid an extra 5-second roundtrip on CPU: default to True
             return True
 
         try:
@@ -118,5 +133,6 @@ class IntentRouter:
             return True
         except Exception:
             return True
+
 
 
