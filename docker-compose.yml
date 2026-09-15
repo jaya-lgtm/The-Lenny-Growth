@@ -1,0 +1,68 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: lenny_growth_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lenny_growth}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-lenny_growth}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: lenny_growth_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-lenny_growth}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      APP_NAME: ${APP_NAME:-The Lenny Growth Assistant}
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
+      RETRIEVAL_TOP_K: ${RETRIEVAL_TOP_K:-3}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-180.0}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic
+      - ./tests:/app/tests
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lenny_growth_frontend
+    restart: unless-stopped
+    environment:
+      VITE_BACKEND_URL: http://backend:8000
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/tailwind.config.js:/app/tailwind.config.js
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/index.html:/app/index.html
+    depends_on:
+      - backend
+
+
+volumes:
+  postgres_data:

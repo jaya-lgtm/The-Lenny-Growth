@@ -1,0 +1,33 @@
+Title: Demo Guide: Finding and Measuring Product-Market Fit
+Source-Type: newsletter
+Source-URL: https://www.lennysnewsletter.com/p/demo-finding-pmf
+Published-At: 2024-05-02T10:00:00Z
+External-ID: newsletter-demo-pmf-003
+Disclaimer: DEMO DATA: Educational overview of product-market fit signals based on Lenny's Newsletter research. Not an official literal excerpt.
+
+# Demo Guide: Finding and Measuring Product-Market Fit
+
+Product-Market Fit (PMF) is not a binary milestone that you achieve once and keep forever; it is a dynamic threshold between your product's value proposition and market demand.
+
+## Quantitative Signals of PMF
+
+There are three primary quantitative tests to evaluate whether you have reached product-market fit:
+
+1. The Sean Ellis 40% Rule: When asking active users "How would you feel if you could no longer use this product?", at least 40% answer "Very disappointed." If you are below 25%, you likely need fundamental product iteration.
+2. Flattening Cohort Retention Curves: Your retention curve must stabilize over a 3 to 6 month window. If the curve slopes toward zero continuously, you do not have PMF, regardless of top-of-funnel acquisition growth.
+3. Organic Word-of-Mouth Velocity: When new signups grow substantially through referrals, direct search, and friend invites without paid promotion.
+
+## Qualitative Signals of PMF
+
+Founders often report that pre-PMF feels like pushing a boulder uphill: every customer conversation requires immense persuasion, users churn silently, and feature requests pull in twenty different directions.
+
+Post-PMF feels like the market is pulling the product out of your hands:
+- Users become vocal advocates and complain passionately when the service experiences downtime.
+- Usage spreads virally inside customer organizations without executive intervention.
+- The company's primary operational challenge shifts from "Will anyone buy this?" to "How do we scale support and server infrastructure fast enough?"
+
+## The Three PMF Engines
+
+1. Sticky Engine: Maximizing customer retention and habitual usage before scaling.
+2. Viral Engine: Leveraging network effects and peer referrals.
+3. Paid Engine: High customer lifetime value (LTV) allowing aggressive customer acquisition cost (CAC).
