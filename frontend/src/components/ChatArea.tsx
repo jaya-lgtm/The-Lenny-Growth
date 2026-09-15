@@ -359,7 +359,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 >
                   {isUser ? (
                     <div className="max-w-xl ml-auto">
-                      <div className="bg-blue-600 text-white rounded-2xl rounded-tr-xs px-4 py-3 text-xs md:text-sm leading-relaxed shadow-xs select-text">
+                      <div className="bg-slate-100/90 text-slate-900 border border-slate-200/80 rounded-2xl rounded-tr-xs px-4 py-3 text-xs md:text-sm leading-relaxed shadow-2xs select-text">
                         {message.content}
                       </div>
                       <div className="mt-1 text-right text-[10px] text-slate-400">

@@ -227,7 +227,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {/* Clean Streamlined History List */}
-          <div className="flex-1 overflow-y-auto px-2 py-2 space-y-3">
+          <div className="flex-1 overflow-y-auto px-2 py-1 space-y-2">
             {sessions.length === 0 ? (
               <div className="text-center py-10 px-3 text-slate-400 text-xs">
                 No chat history yet.
@@ -238,9 +238,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
             ) : (
               groupedSessions.map((group) => (
-                <div key={group.label} className="space-y-1">
+                <div key={group.label} className="space-y-0.5">
                   {/* Subtle Date Header */}
-                  <div className="px-3 pt-3.5 pb-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 select-none">
+                  <div className="px-3 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 select-none">
                     {group.label}
                   </div>
 
@@ -255,7 +255,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <div
                         key={session.id}
                         onClick={() => !isEditing && onSelectSession(session.id)}
-                        className={`group relative flex items-center justify-between w-full min-h-[42px] py-2 px-3.5 rounded-xl cursor-pointer transition-colors duration-150 ${
+                        className={`group relative flex items-center justify-between w-full min-h-[34px] py-1.5 px-3 rounded-lg cursor-pointer transition-colors duration-150 ${
                           isActive
                             ? 'bg-blue-100/70 text-blue-900 font-semibold shadow-2xs'
                             : 'text-slate-800 hover:text-slate-950 hover:bg-slate-200/70'
@@ -273,7 +273,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                               value={editTitle}
                               onChange={(e) => setEditTitle(e.target.value)}
                               autoFocus
-                              className="bg-white text-slate-900 px-2.5 py-1.5 rounded-lg border border-blue-500 text-sm w-full focus:outline-none ring-2 ring-blue-100"
+                              className="bg-white text-slate-900 px-2.5 py-1 rounded-lg border border-blue-500 text-sm w-full focus:outline-none ring-2 ring-blue-100"
                             />
                             <button
                               type="submit"
@@ -296,10 +296,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <div className="flex items-center min-w-0 flex-1 mr-2">
                               {/* Active Blue Dot */}
                               {isActive && (
-                                <span className="w-2.5 h-2.5 rounded-full bg-blue-600 mr-2.5 flex-shrink-0" />
+                                <span className="w-2 h-2 rounded-full bg-blue-600 mr-2 flex-shrink-0" />
                               )}
                               <span
-                                className={`truncate text-[14.5px] leading-normal ${
+                                className={`truncate text-sm leading-snug ${
                                   isActive ? 'font-semibold text-blue-900' : 'font-medium text-slate-800 group-hover:text-slate-950'
                                 }`}
                               >
