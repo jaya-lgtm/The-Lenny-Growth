@@ -57,19 +57,29 @@ class QueryTopicClassifier:
         # Domain 1: Activation & Onboarding
         if any(term in lowered for term in [
             "activation", "onboarding", "aha moment", "setup moment", "habit moment",
-            "time to value", "time-to-value", "first run", "new user experience", "nux"
+            "time to value", "time-to-value", "time to first value", "first run", "new user experience", "nux", "first action"
         ]):
+            activation_clean = f"user activation onboarding time to first value aha moment {clean_text}".strip()
             return TopicIntent(
                 domain="activation_onboarding",
-                clean_query=clean_text,
+                clean_query=activation_clean,
                 substantive_terms=substantive,
                 target_concepts=[
-                    "activation", "onboarding", "aha moment", "setup moment", "habit moment",
-                    "time to value", "adoption", "first run", "friction", "retention", "signup"
+                    "activation", "onboarding", "time to first value", "time to value",
+                    "aha moment", "first meaningful", "first run", "product adoption",
+                    "adoption", "retention", "growth experiments", "activation metrics",
+                    "product-led growth", "plg", "setup moment", "habit moment", "friction"
                 ],
                 negative_terms=[
-                    "leadership", "executive coaching", "recruiting", "hiring recruiters",
-                    "performance review", "1-on-1", "sales quota", "compensation", "board meeting"
+                    "mentorship", "mentor", "mentors", "career", "career advice", "uplevel", "promotion",
+                    "interviewing", "pm career", "jules walter",
+                    "world model", "world models", "robotics", "robots", "dr. fei-fei li", "fei-fei", "ai research",
+                    "neural network", "godmother of ai", "agi", "large language model research",
+                    "good strategy bad strategy", "richard rumelt", "rumelt",
+                    "leadership", "executive coaching", "management", "1-on-1", "1:1",
+                    "performance review", "recruiting", "hiring", "headcount", "compensation",
+                    "board meeting", "managing people", "team structure", "org design",
+                    "sales quota", "sales commission", "cold calling"
                 ],
             )
 

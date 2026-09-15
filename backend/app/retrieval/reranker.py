@@ -78,12 +78,17 @@ class TopicAwareReranker:
             neg_in_title = any(neg in title_lower for neg in intent.negative_terms)
             neg_in_content = any(neg in content_lower for neg in intent.negative_terms)
             
-            has_substantive_topic = concept_hits > 0 or s_lexical >= 0.5
+            # Substantive topic requires direct concept hits, not merely conversational filler
+            has_substantive_topic = concept_hits > 0
             
-            if neg_in_title and not has_substantive_topic:
-                negative_penalty += 0.40
+            if neg_in_title:
+                negative_penalty += 0.60
             elif neg_in_content and not has_substantive_topic:
-                negative_penalty += 0.25
+                negative_penalty += 0.40
+
+        # For activation_onboarding, strictly require at least one target activation concept hit
+        if intent.domain == "activation_onboarding" and concept_hits == 0:
+            negative_penalty += 0.50
 
         # Composite score
         composite = (

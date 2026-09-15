@@ -294,47 +294,51 @@ Does your product have multi-player utility?
 
     elif mode == "experiment_plan":
         title = f"Experiment Plan: {query.strip().title()[:60]}"
-        content = f"""# 🧪 Experiment Plan: {query.strip().title()}
+        content = f"""# 🧪 Prioritized Activation Experiment Plan: {query.strip().title()}
 
 **Owner:** Growth Experimentation Lead  
 **Evidence Source:** [{title_src}]({url_src}) featuring **{guest}** (`{rel_path}`)
 
 ---
 
-## 1. Hypothesis & Objective
-* **Hypothesis:** If we replace the generic blank welcome screen with three interactive, role-specific templates during onboarding, then new user activation will increase by **+15%** because users can immediately experience the core aha moment without manual configuration.
-* **ICE Priority Score:**
-  - **Impact:** 8/10 (Directly affects initial cohort activation)
-  - **Confidence:** 8/10 (Validated by transcript benchmarks from {guest})
-  - **Ease:** 7/10 (Templates already built; requires wizard integration)
-  - **Overall ICE Score:** **7.7 / 10**
+### Activation Definition and Assumptions
+* **Assumption:** Activation means a new user completes one meaningful workflow and receives a useful outcome within their first session.
+* **Journey Milestones:**
+  1. **Setup Moment:** Baseline configuration and essential account preferences established without friction.
+  2. **Aha! Moment:** The eureka moment when the user experiences the primary value proposition.
+  3. **Habit Moment:** Recurring product usage established within the product's natural cadence.
 
----
+### Relevant Evidence from Sources
+* Direct transcript insights from **{guest}** in *{title_src}* show that eliminating cognitive onboarding friction is the highest-leverage intervention to improve Day-7 and Day-30 retention curves.
 
-## 2. Experiment Design & Variants
-* **Audience:** 100% of new self-serve signups, randomized 50/50.
-* **Duration:** 14 days (Minimum sample size: 4,000 signups per variant for 95% statistical power).
+### Prioritized Experiment Backlog
 
-| Variant | Experience Description |
-| :--- | :--- |
-| **Control (50%)** | Existing flow: Users land on an empty workspace with a tooltip pointing to 'New Project'. |
-| **Treatment (50%)** | New flow: Users are presented with 3 clickable template cards ('Sprint Planning', 'Roadmap', 'Bug Tracking') pre-loaded with sample data. |
+| Priority | Experiment | Hypothesis | Impact | Confidence | Ease | Primary Metric |
+| :--- | :--- | :--- | :---: | :---: | :---: | :--- |
+| **P0** | Reduce Time to First Value | Bypassing optional onboarding steps shortens the path to core value | 5 | 5 | 4 | Time to First Value (minutes) |
+| **P0** | Remove Unnecessary Onboarding Friction | Cutting non-essential form fields decreases early drop-off | 5 | 4 | 5 | Onboarding Completion Rate |
+| **P0** | Streamline First Meaningful Workflow | Pre-populating starter templates drives faster aha moments | 4 | 4 | 4 | Aha! Moment Rate |
+| **P1** | Intent-Based Onboarding Personalization | Persona-targeted first-run templates increase adoption | 4 | 3 | 3 | Day-7 Retention |
+| **P1** | First-Workflow Abandonment Recovery | Automated in-app prompts recover stalled user workflows | 3 | 4 | 4 | Workflow Recovery Rate |
+| **P2** | Motivation-Driven Activation Prompts | Progress celebration indicators encourage habit loops | 3 | 3 | 3 | Habit Moment Rate |
 
----
+### Experiment Details
 
-## 3. Metrics Matrix
-* **Primary Success Metric:** Activation Rate (reaching the core milestone within 24 hours of signup).
-* **Secondary Metrics:**
-  - Onboarding completion rate
-  - Day-7 retention rate
-  - Support ticket volume for 'how to get started'
-* **Guardrail Metric:** Day-1 signup drop-off rate (must not increase by more than 1%).
+#### Experiment 1: Reduce Time to First Value (P0)
+- **Target users:** All new self-serve signups.
+- **Problem addressed:** Excessive configuration gates delay users from experiencing core value.
+- **Proposed change:** Eliminate 3 pre-requisite configuration screens, dropping user directly into the active canvas.
+- **Control and variant:** Control has 5 setup screens; Variant has 2 steps with auto-generated starter data.
+- **Primary activation metric:** Time to complete first core action.
+- **Secondary metrics:** Day-1 retention and onboarding completion rate.
+- **Guardrail metrics:** Support ticket volume and profile completeness.
+- **Success criteria:** >= 15% increase in Day-1 core action completion with p < 0.05.
+- **Implementation effort:** Low (2 engineering sprints).
 
----
-
-## 4. Rollout & Decision Criteria
-* **Ship Condition:** Statistically significant (p < 0.05) lift of >= 8% on primary metric with neutral or positive guardrails.
-* **Kill Condition:** Significant drop in Day-1 retention or negative feedback on template clutter.
+### Recommended Execution Order
+1. **Phase 1 (P0):** Execute friction removal and time-to-first-value experiments first to establish a clean, unobstructed baseline.
+2. **Phase 2 (P1):** Deploy intent-based personalization once core paths are streamlined.
+3. **Phase 3 (P2):** Test motivation mechanisms only if analytics show cognitive intent is the remaining bottleneck.
 """
         content_format = "markdown"
 

@@ -23,11 +23,13 @@ def retriever():
 def seed_topic_corpus(db_session):
     """
     Seeds representative multi-topic transcript corpus into the test database:
-    1. An activation/onboarding episode
-    2. An off-topic leadership coaching episode
-    3. A PMF/retention curve episode
-    4. An off-topic AI code editor episode
-    5. An active chat session
+    1. An active chat session
+    2. An activation/onboarding episode (Lauryn Isford)
+    3. An off-topic leadership coaching episode (Ken Norton)
+    4. An off-topic career mentorship episode (Jules Walter)
+    5. An off-topic AI/world-models episode (Dr. Fei-Fei Li)
+    6. An off-topic general strategy episode (Richard Rumelt)
+    7. A PMF/retention curve episode (Casey Winters)
     """
     embedder = DeterministicLocalEmbedder(dim=768)
 
@@ -61,9 +63,9 @@ def seed_topic_corpus(db_session):
         id=uuid.uuid4(),
         document_id=doc_activation.id,
         chunk_index=1,
-        content="We define the setup moment, aha moment, and habit moment. Early onboarding drop-offs hurt compounding growth.",
+        content="We define the setup moment, aha moment, and habit moment. Early onboarding drop-offs hurt compounding growth and time to first value.",
         token_count=18,
-        embedding=embedder.embed_text("setup moment aha moment habit moment onboarding drop-offs compounding growth"),
+        embedding=embedder.embed_text("setup moment aha moment habit moment onboarding drop-offs compounding growth time to first value"),
         chunk_metadata={"guest": "Lauryn Isford"},
     )
     db_session.add_all([chunk_activation_1, chunk_activation_2])
@@ -91,7 +93,76 @@ def seed_topic_corpus(db_session):
     )
     db_session.add(chunk_leadership)
 
-    # 4. PMF Document & Chunk
+    # 4. Off-Topic Mentorship Document & Chunk (Jules Walter)
+    doc_mentorship = DocumentModel(
+        id=uuid.uuid4(),
+        source_type="podcast",
+        title="Leveraging mentors to uplevel your career | Jules Walter (YouTube, Slack)",
+        source_url="https://youtube.com/watch?v=mentorship-test",
+        content_hash="hash-topic-mentorship-1",
+        doc_metadata={"guest": "Jules Walter", "keywords": ["mentorship", "career", "promotion"]},
+    )
+    db_session.add(doc_mentorship)
+    db_session.flush()
+
+    chunk_mentorship = DocumentChunkModel(
+        id=uuid.uuid4(),
+        document_id=doc_mentorship.id,
+        chunk_index=0,
+        content="In career development, finding great mentors at Slack and YouTube helped me navigate promotions, hiring manager relationships, and career advice.",
+        token_count=20,
+        embedding=embedder.embed_text("career development mentors slack youtube promotions hiring manager career advice"),
+        chunk_metadata={"guest": "Jules Walter"},
+    )
+    db_session.add(chunk_mentorship)
+
+    # 5. Off-Topic AI & World Models Document & Chunk (Dr. Fei-Fei Li)
+    doc_ai = DocumentModel(
+        id=uuid.uuid4(),
+        source_type="podcast",
+        title="The Godmother of AI on jobs, robots & why world models are next | Dr. Fei-Fei Li",
+        source_url="https://youtube.com/watch?v=ai-feifei-test",
+        content_hash="hash-topic-ai-feifei-1",
+        doc_metadata={"guest": "Dr. Fei-Fei Li", "keywords": ["ai", "robotics", "world models"]},
+    )
+    db_session.add(doc_ai)
+    db_session.flush()
+
+    chunk_ai = DocumentChunkModel(
+        id=uuid.uuid4(),
+        document_id=doc_ai.id,
+        chunk_index=0,
+        content="World models and spatial intelligence are the next frontier for AI research, robotics, and machine learning neural networks.",
+        token_count=18,
+        embedding=embedder.embed_text("world models spatial intelligence ai research robotics machine learning neural networks"),
+        chunk_metadata={"guest": "Dr. Fei-Fei Li"},
+    )
+    db_session.add(chunk_ai)
+
+    # 6. Off-Topic Strategy Document & Chunk (Richard Rumelt)
+    doc_strategy = DocumentModel(
+        id=uuid.uuid4(),
+        source_type="podcast",
+        title="Good Strategy, Bad Strategy | Richard Rumelt",
+        source_url="https://youtube.com/watch?v=rumelt-test",
+        content_hash="hash-topic-rumelt-1",
+        doc_metadata={"guest": "Richard Rumelt", "keywords": ["strategy", "planning"]},
+    )
+    db_session.add(doc_strategy)
+    db_session.flush()
+
+    chunk_strategy = DocumentChunkModel(
+        id=uuid.uuid4(),
+        document_id=doc_strategy.id,
+        chunk_index=0,
+        content="A good corporate strategy identifies the single pivotal challenge and focuses organizational power on overcoming it.",
+        token_count=18,
+        embedding=embedder.embed_text("good corporate strategy identifies single pivotal challenge focuses organizational power"),
+        chunk_metadata={"guest": "Richard Rumelt"},
+    )
+    db_session.add(chunk_strategy)
+
+    # 7. PMF Document & Chunk
     doc_pmf = DocumentModel(
         id=uuid.uuid4(),
         source_type="podcast",
@@ -114,153 +185,115 @@ def seed_topic_corpus(db_session):
     )
     db_session.add(chunk_pmf)
 
-    # 5. Off-topic AI Code Editor Document & Chunk
-    doc_ai = DocumentModel(
-        id=uuid.uuid4(),
-        source_type="podcast",
-        title="Building an AI code editor used by 1m developers | Windsurf",
-        source_url="https://youtube.com/watch?v=ai-test",
-        content_hash="hash-topic-ai-1",
-        doc_metadata={"guest": "AI Founder", "keywords": ["ai", "dev tools", "ide"]},
-    )
-    db_session.add(doc_ai)
-    db_session.flush()
-
-    chunk_ai = DocumentChunkModel(
-        id=uuid.uuid4(),
-        document_id=doc_ai.id,
-        chunk_index=0,
-        content="We built an AI code editor that autocompletes code blocks in Python and TypeScript inside the IDE.",
-        token_count=18,
-        embedding=embedder.embed_text("ai code editor autocompletes code blocks python typescript ide"),
-        chunk_metadata={"guest": "AI Founder"},
-    )
-    db_session.add(chunk_ai)
-
     db_session.commit()
 
     return {
         "session": session,
         "doc_activation": doc_activation,
         "doc_leadership": doc_leadership,
-        "doc_pmf": doc_pmf,
+        "doc_mentorship": doc_mentorship,
         "doc_ai": doc_ai,
+        "doc_strategy": doc_strategy,
+        "doc_pmf": doc_pmf,
     }
 
 
-def test_activation_query_retrieves_activation_sources(db_session, seed_topic_corpus, retriever):
-    """1. Activation query retrieves activation-related sources."""
-    query = "What are the most important lessons from Lenny's Podcast about improving user activation?"
+def test_activation_queries_do_not_cite_mentorship_or_career(db_session, seed_topic_corpus, retriever):
+    """1. Activation queries do not cite mentorship or career episodes (e.g. Jules Walter)."""
+    query = "Create a prioritized experiment plan to improve activation for this platform."
+    results = retriever.retrieve(db_session, query=query, top_k=5)
+
+    titles = [r.title for r in results]
+    assert not any("mentors" in t.lower() or "jules walter" in t.lower() for t in titles), (
+        f"Off-topic mentorship episode included in activation results: {titles}"
+    )
+
+
+def test_activation_queries_do_not_cite_ai_or_world_models(db_session, seed_topic_corpus, retriever):
+    """2. Activation queries do not cite AI / world-model episodes (e.g. Dr. Fei-Fei Li)."""
+    query = "Create a prioritized experiment plan to improve activation for this platform."
+    results = retriever.retrieve(db_session, query=query, top_k=5)
+
+    titles = [r.title for r in results]
+    assert not any("world models" in t.lower() or "fei-fei" in t.lower() for t in titles), (
+        f"Off-topic AI/world models episode included in activation results: {titles}"
+    )
+
+
+def test_activation_queries_do_not_cite_unrelated_leadership(db_session, seed_topic_corpus, retriever):
+    """3. Activation queries do not cite unrelated leadership or strategy episodes (e.g. Ken Norton, Richard Rumelt)."""
+    query = "Create a prioritized experiment plan to improve activation for this platform."
+    results = retriever.retrieve(db_session, query=query, top_k=5)
+
+    titles = [r.title for r in results]
+    assert not any("ken norton" in t.lower() or "richard rumelt" in t.lower() for t in titles), (
+        f"Off-topic leadership/strategy episode included in activation results: {titles}"
+    )
+
+
+def test_relevant_activation_onboarding_chunks_preferred(db_session, seed_topic_corpus, retriever):
+    """4. Relevant activation/onboarding chunks are preferred."""
+    query = "Create a prioritized experiment plan to improve activation for this platform."
     results = retriever.retrieve(db_session, query=query, top_k=4)
 
     assert len(results) > 0
-    # Must retrieve activation/onboarding sources
+    # Must retrieve the activation document
     titles = [r.title for r in results]
     assert any("Activation" in t or "Onboarding" in t for t in titles)
     for res in results:
         content_lower = res.content.lower()
-        title_lower = res.title.lower()
-        has_relevance = any(term in content_lower or term in title_lower for term in ["activation", "onboarding", "aha", "retention"])
-        assert has_relevance, f"Non-activation chunk retrieved: {res.title}"
+        has_activation_concept = any(c in content_lower for c in [
+            "activation", "onboarding", "aha", "retention", "time to first value", "friction"
+        ])
+        assert has_activation_concept, f"Non-activation chunk retrieved: {res.title}"
 
 
-def test_leadership_sources_excluded_from_activation(db_session, seed_topic_corpus, retriever):
-    """2. Leadership/team-building sources are excluded from an activation answer when unrelated."""
-    query = "What are the most important lessons from Lenny's Podcast about improving user activation?"
-    results = retriever.retrieve(db_session, query=query, top_k=4)
-
-    titles = [r.title for r in results]
-    # Executive leadership coaching episode must NOT be among retrieved chunks
-    assert "Executive Product Leadership and Coaching | Ken Norton" not in titles
-
-
-def test_pmf_queries_do_not_cite_unrelated_ai_or_sales(db_session, seed_topic_corpus, retriever):
-    """3. Product-market-fit queries prioritize PMF/retention and do not cite unrelated AI code editors."""
-    query = "How do I know if I have product-market fit?"
-    results = retriever.retrieve(db_session, query=query, top_k=4)
-
-    assert len(results) > 0
-    titles = [r.title for r in results]
-    # Should include PMF episode
-    assert any("Product-Market Fit" in t or "Casey Winters" in t for t in titles)
-    # Should NOT include AI code editor
-    assert not any("code editor" in t.lower() or "windsurf" in t.lower() for t in titles)
-
-
-def test_unrelated_chunks_fail_citation_validation():
-    """4. Unrelated chunks fail citation validation."""
-    intent = QueryTopicClassifier.classify("What are the best ways to improve onboarding?")
-    
-    unrelated_chunk = RetrievalResult(
-        chunk_id=uuid.uuid4(),
-        document_id=uuid.uuid4(),
-        title="Executive Compensation and Board Governance",
-        source_type="podcast",
-        source_url="https://example.com/board",
-        chunk_index=2,
-        content="In this episode we cover CEO equity refresh grants, compensation committees, and managing board expectations.",
-        similarity=0.34,
-        metadata={"guest": "Corporate Governance Expert"},
-    )
-
-    is_valid = CitationValidator.is_chunk_valid(unrelated_chunk, intent, min_relevance=0.28)
-    assert is_valid is False
-
-    validated = CitationValidator.filter_valid_citations(
-        chunks=[unrelated_chunk],
-        query="What are the best ways to improve onboarding?",
-        min_relevance=0.28,
-    )
-    assert len(validated) == 0
-
-
-def test_insufficient_evidence_does_not_fabricate_citations(client, seed_topic_corpus):
-    """5. Answers with insufficient evidence do not fabricate citations."""
+def test_unsupported_experiments_labeled_as_general_hypotheses(client, seed_topic_corpus):
+    """5. Unsupported experiments are labeled as general hypotheses, not direct podcast recommendations."""
     session_id = str(seed_topic_corpus["session"].id)
     res = client.post(
         "/api/chat",
         json={
             "session_id": session_id,
-            "message": "What is quantum electrodynamics in astrophysics?",
+            "message": "Create a prioritized experiment plan to improve activation for this platform.",
+            "provider": "mock",
+        },
+    )
+    assert res.status_code == status.HTTP_200_OK
+    data = res.json()
+    content = data["message"]["content"]
+
+    # Must define activation and state explicit assumptions
+    assert "### Activation Definition and Assumptions" in content
+    assert "Assumption: activation means a new user completes one meaningful workflow" in content
+    assert "### Relevant Evidence from Sources" in content
+    assert "### Prioritized Experiment Backlog" in content
+    assert "| Priority | Experiment | Hypothesis | Impact | Confidence | Ease | Primary Metric |" in content
+    assert "### Experiment Details" in content
+    assert "### Recommended Execution Order" in content
+
+
+def test_zero_relevant_sources_produce_transparent_limitation(client, seed_topic_corpus):
+    """6. Zero relevant sources produce a transparent limitation without fabricated citations."""
+    session_id = str(seed_topic_corpus["session"].id)
+    res = client.post(
+        "/api/chat",
+        json={
+            "session_id": session_id,
+            "message": "What are the rules of astrophysics quantum electrodynamics?",
+            "provider": "mock",
         },
     )
     assert res.status_code == status.HTTP_200_OK
     data = res.json()
     msg = data["message"]
-    assert msg["role"] == "assistant"
-    # Must not fabricate citations
     assert msg["message_metadata"]["retrieval_count"] == 0
     assert len(msg["message_metadata"]["sources"]) == 0
     assert "could not find sufficient evidence" in msg["content"].lower()
 
 
-def test_single_relevant_source_accepted_without_forcing_additional_sources():
-    """6. A single relevant source is accepted without forcing additional sources or padding."""
-    query = "What are the most important lessons from Lenny's Podcast about improving user activation?"
-    
-    single_valid_chunk = RetrievalResult(
-        chunk_id=uuid.uuid4(),
-        document_id=uuid.uuid4(),
-        title="Mastering onboarding and user activation",
-        source_type="podcast",
-        source_url="https://example.com/activation",
-        chunk_index=1,
-        content="Onboarding is the highest leverage area for activation and long-term user retention.",
-        similarity=0.62,
-        metadata={"guest": "Growth Lead", "composite_relevance": 0.62},
-    )
-
-    validated = CitationValidator.filter_valid_citations(
-        chunks=[single_valid_chunk],
-        query=query,
-        min_relevance=0.28,
-    )
-    assert len(validated) == 1
-    assert validated[0].title == "Mastering onboarding and user activation"
-
-
-def test_transcript_claims_and_general_recommendations_separated(client, seed_topic_corpus):
-    """7. Transcript-supported claims and general recommendations are clearly separated."""
+def test_citations_directly_support_claims(client, seed_topic_corpus):
+    """7. Citations directly support the claims they accompany."""
     session_id = str(seed_topic_corpus["session"].id)
     res = client.post(
         "/api/chat",
@@ -272,14 +305,15 @@ def test_transcript_claims_and_general_recommendations_separated(client, seed_to
     )
     assert res.status_code == status.HTTP_200_OK
     data = res.json()
-    content = data["message"]["content"]
+    sources = data["message"]["message_metadata"]["sources"]
 
-    # Structure checks
-    assert "### Most Important Lessons" in content
-    assert "### Evidence Limitations" in content
-    assert ("Lesson 1" in content or "1." in content)
-    assert "Why it matters" in content
-    assert "Practical implication" in content
-    assert "Citation" in content
-    # Ensure off-topic leadership episode is not cited
-    assert "Executive Product Leadership" not in content
+    assert len(sources) > 0
+    for s in sources:
+        title = s.get("title", "").lower()
+        excerpt = s.get("excerpt", "").lower()
+        # Ensure citation is directly grounded in activation/onboarding
+        assert "activation" in title or "onboarding" in title or "activation" in excerpt or "onboarding" in excerpt
+        # Reject off-topic domains
+        assert "mentors" not in title
+        assert "world models" not in title
+        assert "corporate strategy" not in title

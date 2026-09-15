@@ -110,7 +110,10 @@ class VectorRetriever:
 
         # 3. Hybrid Lexical candidate retrieval (if enabled and substantive terms exist)
         if self.settings.enable_lexical_hybrid and (intent.substantive_terms or intent.target_concepts):
-            primary_terms = intent.substantive_terms[:3] or intent.target_concepts[:2]
+            if intent.domain == "activation_onboarding":
+                primary_terms = ["activation", "onboarding", "time to value", "aha moment"]
+            else:
+                primary_terms = intent.substantive_terms[:3] or intent.target_concepts[:2]
             lex_clauses = []
             for term in primary_terms:
                 if len(term) >= 4:

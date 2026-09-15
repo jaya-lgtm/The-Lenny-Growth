@@ -28,28 +28,33 @@ class CitationValidator:
         content_lower = chunk.content.lower()
         title_lower = (chunk.title or "").lower()
 
-        # Check for off-topic domain collision (e.g. leadership when asking about activation)
+        # 1. Reject if title matches any negative off-topic terms (e.g. mentorship, world models, leadership)
         if intent.negative_terms:
             has_neg_title = any(neg in title_lower for neg in intent.negative_terms)
-            has_neg_content = any(neg in content_lower for neg in intent.negative_terms)
-            has_positive_concept = any(concept in content_lower for concept in intent.target_concepts)
-            
-            if (has_neg_title or has_neg_content) and not has_positive_concept:
-                logger.info(f"Rejected chunk {chunk.chunk_id} from '{chunk.title}': off-topic domain match")
+            if has_neg_title:
+                logger.info(f"Rejected chunk {chunk.chunk_id} from '{chunk.title}': off-topic title collision with {intent.negative_terms[:3]}")
                 return False
 
-        # Ensure chunk actually mentions at least one substantive query concept or target concept
-        # (prevents chunks that only shared common English grammatical words from being cited)
-        matches_concept = any(c in content_lower for c in intent.target_concepts)
-        matches_substantive = any(t in content_lower for t in intent.substantive_terms)
-        
-        # If vector similarity is extraordinarily high (> 0.50), allow it even without exact keywords
-        # to honor semantic relevance requirement (rule 5)
-        is_high_semantic = chunk.similarity >= 0.50
+            has_neg_content = any(neg in content_lower for neg in intent.negative_terms)
+            has_positive_concept = any(concept in content_lower for concept in intent.target_concepts)
+            if has_neg_content and not has_positive_concept:
+                logger.info(f"Rejected chunk {chunk.chunk_id} from '{chunk.title}': off-topic content match without positive concepts")
+                return False
 
-        if not (matches_concept or matches_substantive or is_high_semantic):
-            logger.info(f"Rejected chunk {chunk.chunk_id}: lacks concept/substantive overlap and insufficient semantic score")
-            return False
+        # 2. For activation queries: MUST explicitly discuss core activation concepts
+        if intent.domain == "activation_onboarding":
+            matches_activation_concept = any(c in content_lower for c in intent.target_concepts)
+            if not matches_activation_concept:
+                logger.info(f"Rejected chunk {chunk.chunk_id} from '{chunk.title}': lacks direct activation/onboarding concepts")
+                return False
+        else:
+            matches_concept = any(c in content_lower for c in intent.target_concepts)
+            matches_substantive = any(t in content_lower for t in intent.substantive_terms)
+            is_high_semantic = chunk.similarity >= 0.50
+
+            if not (matches_concept or matches_substantive or is_high_semantic):
+                logger.info(f"Rejected chunk {chunk.chunk_id}: lacks concept/substantive overlap and insufficient semantic score")
+                return False
 
         return True
 
