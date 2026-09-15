@@ -7,18 +7,7 @@ Powered by **PostgreSQL 16 with pgvector**, the **Pi Coding Agent framework (`pi
 
 ---
 
-## Required Deliverables Index
 
-| # | Deliverable | Location in Repository | Summary |
-| :-: | :--- | :--- | :--- |
-| **1** | **Public GitHub Repository** | Root workspace | Clean project structure, containerized, zero committed secrets. |
-| **2** | **README.md** | [README.md](file:///README.md) | Architecture overview, setup, env config, test execution, troubleshooting. |
-| **3** | **Product Requirements (PRD)** | [PRD.md](file:///PRD.md) & [docs/prd.md](file:///docs/prd.md) | User persona, problem framing, success metrics, scope, flows, acceptance criteria. |
-| **4** | **Design Specification** | [design.md](file:///design.md) & [docs/design.md](file:///docs/design.md) | UI/UX principles, information architecture, 7 interaction states, responsive layouts, a11y. |
-| **5** | **Architecture Document** | [architecture.md](file:///architecture.md) & [docs/architecture.md](file:///docs/architecture.md) | DB schema, sequence flows, Docker topology, logging, resilience & failure matrices. |
-| **6** | **Coding Agent Transcripts** | [agent_transcripts/](file:///agent_transcripts/) & [SUMMARY.md](file:///agent_transcripts/SUMMARY.md) | Chronological development logs, failed attempts, and how they were corrected. |
-| **7** | **Automated & Manual Tests** | [tests/](file:///tests/) & [tests/manual_test_plan.md](file:///tests/manual_test_plan.md) | 64 passing automated tests + step-by-step UI manual test plan. |
-| **8** | **Demo Video Script & Guide** | [DEMO_SCRIPT.md](file:///DEMO_SCRIPT.md) & [docs/demo_video_guide.md](file:///docs/demo_video_guide.md) | 2–3 minute timed talk track, camera setup checklist, YouTube submission steps. |
 
 ---
 
