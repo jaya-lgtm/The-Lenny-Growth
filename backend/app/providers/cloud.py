@@ -243,6 +243,13 @@ class MockLLMProvider(BaseLLMProvider):
         **kwargs,
     ) -> LLMResponse:
         import re
+        if "determine if the user's message requires retrieving" in prompt.lower():
+            u_match = re.search(r'User message:\s*"([^"]+)"', prompt)
+            u_text = u_match.group(1).lower().strip() if u_match else prompt.lower()
+            if any(w in u_text for w in ["hi", "hello", "hey", "how are you", "who are you", "what can you do", "thanks", "thank you", "help"]):
+                return LLMResponse(content="CONVERSATION", provider=self.provider_name, model=self.model_name)
+            return LLMResponse(content="RETRIEVE", provider=self.provider_name, model=self.model_name)
+
         source_match = re.search(r'Source:\s*"([^"]+)"\s*(?:with\s*([^\n(]+))?', prompt)
         if source_match:
             cited_title = source_match.group(1).strip()

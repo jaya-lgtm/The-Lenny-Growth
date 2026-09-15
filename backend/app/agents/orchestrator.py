@@ -73,11 +73,17 @@ class AgentOrchestrator:
         db.add(user_record)
         db.flush()
 
-        # 5. Retrieve relevant transcript chunks (skipped for conversational greetings/pleasantries)
-        is_conversational = IntentRouter.is_conversational(user_message)
-        if is_conversational and effective_mode == "grounded_qa":
+        # 5. Resolve LLM provider
+        provider = get_llm_provider(name=provider_name)
+
+        # 6. Retrieve relevant transcript chunks (LLM-evaluated)
+        needs_retrieval = True
+        if effective_mode == "grounded_qa":
+            needs_retrieval = IntentRouter.should_retrieve(provider=provider, user_message=user_message)
+
+        if not needs_retrieval:
             retrieval_results = []
-            logger.info(f"Message in session {session_id} is conversational greeting/pleasantry. Skipping vector retrieval.")
+            logger.info(f"LLM routed message in session {session_id} to conversation. Skipping vector retrieval.")
         else:
             settings = get_settings()
             effective_provider = (provider_name or settings.llm_provider).lower()
@@ -93,9 +99,6 @@ class AgentOrchestrator:
                 top_k=top_k,
                 similarity_threshold=similarity_threshold,
             )
-
-        # 6. Resolve LLM provider
-        provider = get_llm_provider(name=provider_name)
 
         # 7. Execute Grounded Q&A Agent / Skill
         agent = GroundedQAAgent(provider=provider)

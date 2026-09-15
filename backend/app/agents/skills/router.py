@@ -86,3 +86,37 @@ class IntentRouter:
         ]
         return any(re.search(p, cleaned) for p in patterns)
 
+    @staticmethod
+    def should_retrieve(provider: any, user_message: str) -> bool:
+        """
+        Uses an LLM classification prompt to determine whether the user query
+        requires retrieving transcript evidence from Lenny's Podcast, or is a
+        conversational turn (greeting, pleasantry, chit-chat, meta-question).
+        """
+        if IntentRouter.is_conversational(user_message):
+            return False
+
+        if not provider:
+            return True
+
+        try:
+            prompt = (
+                "You are a routing controller for an AI growth assistant specializing in Lenny's Podcast.\n"
+                "Determine if the user's message requires retrieving factual product/growth knowledge from Lenny's Podcast transcripts, "
+                "or if it is a conversational turn (greeting, pleasantry, general polite remark, or general small-talk).\n\n"
+                f"User message: \"{user_message}\"\n\n"
+                "Reply with ONLY one word: 'RETRIEVE' or 'CONVERSATION'."
+            )
+            response = provider.generate(
+                prompt=prompt,
+                max_tokens=5,
+                temperature=0.0,
+            )
+            decision = (response.content or "").strip().upper()
+            if "CONVERSATION" in decision:
+                return False
+            return True
+        except Exception:
+            return True
+
+
