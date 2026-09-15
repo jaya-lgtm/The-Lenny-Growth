@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     vite_backend_url: str = "http://backend:8000"
 
     # Embedding & Retrieval Settings (Milestone 2 & Topic-Aware Retrieval)
-    embedding_provider: str = "ollama"
+    embedding_provider: str = "local"
     ollama_base_url: str = "http://localhost:11434"
     ollama_embedding_model: str = "nomic-embed-text"
     embedding_dim: int = 768

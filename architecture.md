@@ -28,7 +28,7 @@
 │  │  • Formatted View: Formatted Markdown OR Isolated Sandboxed Iframe    │  │
 │  │    [sandbox="allow-scripts", STRICTLY NO allow-same-origin]           │  │
 │  │  • Raw Source Tab: Markdown / HTML syntax viewer with byte count      │  │
-│  │  • Evidence & Citations Tab: Real ChatPRD quotes & YouTube links      │  │
+│  │  • Evidence & Citations Tab: Real Lenny's Podcast quotes & YouTube links │  │
 │  │  • Actions: Clipboard Copy ("Copied!" badge), Download, Fullscreen    │  │
 │  └───────────────────────────────────────────────────────────────────────┘  │
 └────────────────────────────────────┬────────────────────────────────────────┘
@@ -66,7 +66,7 @@
 │                     POSTGRESQL 16 (pgvector) DATABASE                       │
 │  ┌─────────────────────────┐  ┌──────────────────────────────────────────┐  │
 │  │ documents               │  │ document_chunks                          │  │
-│  │ • 272 ChatPRD transcripts│  │ • 37,226 chunks with 768-dim embeddings │  │
+│  │ • 272 Podcast episodes  │  │ • 37,226 chunks with 768-dim embeddings │  │
 │  │ • guest, title, URL,    │  │ • HNSW index (cosine similarity)         │  │
 │  │   pub_date, file_path   │  │ • chunk_index, token_count, metadata     │  │
 │  └────────────┬────────────┘  └────────────────────┬─────────────────────┘  │

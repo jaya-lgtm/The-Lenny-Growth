@@ -26,7 +26,7 @@
 │  │  • Formatted View: Formatted Markdown OR Isolated Sandboxed Iframe    │  │
 │  │    [sandbox="allow-scripts", STRICTLY NO allow-same-origin]           │  │
 │  │  • Raw Source Tab: Markdown / HTML syntax viewer with byte count      │  │
-│  │  • Evidence & Citations Tab: Real ChatPRD quotes & YouTube links      │  │
+│  │  • Evidence & Citations Tab: Real Lenny's Podcast quotes & YouTube links │  │
 │  │  • Actions: Clipboard Copy ("Copied!" badge), Download, Fullscreen    │  │
 │  └───────────────────────────────────────────────────────────────────────┘  │
 └────────────────────────────────────┬────────────────────────────────────────┘
@@ -64,7 +64,7 @@
 │                     POSTGRESQL 16 (pgvector) DATABASE                       │
 │  ┌─────────────────────────┐  ┌──────────────────────────────────────────┐  │
 │  │ documents               │  │ document_chunks                          │  │
-│  │ • 272 ChatPRD transcripts│  │ • 37,226 chunks with 768-dim embeddings │  │
+│  │ • 272 Podcast episodes  │  │ • 37,226 chunks with 768-dim embeddings │  │
 │  │ • guest, title, URL,    │  │ • HNSW index (cosine similarity)         │  │
 │  │   pub_date, file_path   │  │ • chunk_index, token_count, metadata     │  │
 │  └────────────┬────────────┘  └────────────────────┬─────────────────────┘  │
@@ -96,7 +96,7 @@
 ## 2. Ingestion & Vector Retrieval Sequence Flow
 
 ```
-ChatPRD Transcripts             Ingestion Pipeline              PostgreSQL (pgvector)
+Lenny's Transcripts             Ingestion Pipeline              PostgreSQL (pgvector)
         │                               │                                 │
         ├─ 272 Markdown files ─────────►│                                 │
         │  (Frontmatter + Transcript)   ├─ Parse metadata & guest info    │
@@ -105,13 +105,30 @@ ChatPRD Transcripts             Ingestion Pipeline              PostgreSQL (pgve
         │                               │                                 ├─ Build HNSW Cosine Index
         │                               │                                 │
 Query Flow:                             │                                 │
-User Query ────► FastAPI Backend ───────┼─ Generate 768-dim vector ──────►│
-                                        │                                 ├─ Vector cosine distance (<=>)
-                                        │                                 │  Filtered by threshold >= 0.5
-                                        │◄- Return Top-K Chunks + Metadata┤
-                                        ├─ Assemble Agent Context + Cites │
-                                        ├─ Invoke Pi Coding Agent Runner ─┤
-                                        ▼                                 ▼
+User Query ────► FastAPI Backend ───────┤                                 │
+                │                       │                                 │
+                ├─ 1. QueryTopicClassifier                                │
+                │     • Classify domain intent (e.g. activation_onboarding)│
+                │     • Strip stopword dilution & build concept queries   │
+                │     • Assign negative penalties (mentorship, AI models) │
+                │                       │                                 │
+                ├─ 2. Dual-Path Retrieval                                 │
+                │     ├─ Dense Vector Search ────────────────────────────►│ (HNSW Cosine distance <=>)
+                │     └─ Lexical Hybrid Candidate Scan (ILIKE) ──────────►│ (Match primary concept terms)
+                │                                                         │
+                ├─ 3. TopicAwareReranker                                  │
+                │     • S_comp = 0.35*S_vec + 0.30*S_lex + 0.25*S_con     │
+                │                + 0.10*S_meta - P_neg                    │
+                │     • Penalize off-topic tangents (-0.50)               │
+                │     • Filter below min_composite_relevance (0.35)       │
+                │                       │                                 │
+                ├─ 4. CitationValidator                                   │
+                │     • Enforce domain concept presence in cited chunks   │
+                │     • Zero-padding guarantee (1 source -> 1 citation)   │
+                │                       │                                 │
+                ├─ 5. Grounded Agent Context Assembly                     │
+                ├─ 6. Invoke Pi Coding Agent Runner ──────────────────────┤
+                ▼                                                         ▼
 ```
 
 ---
@@ -267,6 +284,6 @@ The backend implements structured logging with contextual diagnostic tags across
 | **Ollama Daemon Offline** | Connection refused to `http://host.docker.internal:11434` | Explicit **HTTP 503** with remediation: `"Ensure Ollama is running ('ollama serve') and model is pulled"`. Zero silent fallback. |
 | **Missing Cloud API Key** | Empty `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` | Explicit **HTTP 503** with message: `"OPENAI_API_KEY is not configured"`. |
 | **Model Generation Timeout** | Request exceeds `LLM_TIMEOUT_SECONDS` (180s) | HTTP 504 Gateway Timeout returned with retry guidelines. |
-| **Empty Retrieval Results** | Cosine similarity score $< 0.50$ for all chunks | Agent adheres to limitation policy: explicitly acknowledges lack of transcript evidence. |
+| **Empty Retrieval Results** | Composite relevance $< 0.35$ or zero verified domain concept hits | Agent adheres to limitation policy: explicitly acknowledges lack of transcript evidence. |
 | **Database Connection Failure** | SQLAlchemy DB connection pool disconnect | `/api/health` returns `degraded`. API returns HTTP 503 Service Unavailable. |
 | **Cross-Session Tampering** | Query parameter `session_id` mismatch on artifact | Explicit **HTTP 403** `CROSS_SESSION_ACCESS_DENIED`. |
