@@ -8,9 +8,6 @@ Powered by **PostgreSQL 16 with pgvector**, the **Pi Coding Agent framework (`pi
 ---
 
 
-
----
-
 ## 1. Key Capabilities
 
 * **Evidence-Grounded Product Reasoning**: Synthesizes answers strictly from indexed episode chunks with verbatim quotes, speaker attributions, YouTube timestamps, and match scores.
