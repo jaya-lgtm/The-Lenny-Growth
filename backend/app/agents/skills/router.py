@@ -57,3 +57,32 @@ class IntentRouter:
             return "html_css", SKILL_MODES["html_css"]
 
         return "grounded_qa", SKILL_MODES["grounded_qa"]
+
+    @staticmethod
+    def is_conversational(user_message: str) -> bool:
+        """
+        Detects if user message is a greeting, pleasantry, or introductory question,
+        which should be answered naturally without forcing transcript retrieval or citations.
+        """
+        cleaned = user_message.strip().lower()
+        cleaned = re.sub(r"[!.,?]+$", "", cleaned).strip()
+
+        if cleaned in {
+            "hi", "hello", "hey", "heyy", "heyyy", "howdy", "sup", "yo", "hola",
+            "good morning", "good afternoon", "good evening",
+            "who are you", "what are you", "what can you do", "tell me about yourself",
+            "how are you", "how's it going", "how are you doing", "what's up",
+            "thanks", "thank you", "thx", "appreciate it", "thank you so much",
+            "help", "can you help me",
+        }:
+            return True
+
+        patterns = [
+            r"^(hi|hello|hey|heyy|howdy|sup|yo|greetings|hola)\b",
+            r"^good\s+(morning|afternoon|evening|day)\b",
+            r"^(who\s+are\s+you|what\s+are\s+you|what\s+can\s+you\s+do|tell\s+me\s+about\s+yourself)\b",
+            r"^(how\s+are\s+you|how's\s+it\s+going|how\s+are\s+you\s+doing|what's\s+up)\b",
+            r"^(thanks|thank\s+you|thx|appreciate\s+it)\b",
+        ]
+        return any(re.search(p, cleaned) for p in patterns)
+

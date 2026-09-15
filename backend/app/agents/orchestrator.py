@@ -73,21 +73,26 @@ class AgentOrchestrator:
         db.add(user_record)
         db.flush()
 
-        # 5. Retrieve relevant transcript chunks
-        settings = get_settings()
-        effective_provider = (provider_name or settings.llm_provider).lower()
-        if effective_provider in ("mock", "local", "test") or settings.embedding_provider in ("mock", "local", "test"):
-            from ingestion.embedder import DeterministicLocalEmbedder
-            retriever = VectorRetriever(embedder=DeterministicLocalEmbedder(dim=768))
+        # 5. Retrieve relevant transcript chunks (skipped for conversational greetings/pleasantries)
+        is_conversational = IntentRouter.is_conversational(user_message)
+        if is_conversational and effective_mode == "grounded_qa":
+            retrieval_results = []
+            logger.info(f"Message in session {session_id} is conversational greeting/pleasantry. Skipping vector retrieval.")
         else:
-            retriever = self.retriever
+            settings = get_settings()
+            effective_provider = (provider_name or settings.llm_provider).lower()
+            if effective_provider in ("mock", "local", "test") or settings.embedding_provider in ("mock", "local", "test"):
+                from ingestion.embedder import DeterministicLocalEmbedder
+                retriever = VectorRetriever(embedder=DeterministicLocalEmbedder(dim=768))
+            else:
+                retriever = self.retriever
 
-        retrieval_results = retriever.retrieve(
-            db=db,
-            query=user_message,
-            top_k=top_k,
-            similarity_threshold=similarity_threshold,
-        )
+            retrieval_results = retriever.retrieve(
+                db=db,
+                query=user_message,
+                top_k=top_k,
+                similarity_threshold=similarity_threshold,
+            )
 
         # 6. Resolve LLM provider
         provider = get_llm_provider(name=provider_name)

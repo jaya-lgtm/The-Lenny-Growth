@@ -260,16 +260,32 @@ class MockLLMProvider(BaseLLMProvider):
             for word in ["hello", "hi", "hey", "greetings", "good morning", "good afternoon", "good evening", "who are you", "what can you do"]
         ) or question_text in ["hello", "hi", "hey", "help"]
 
-        if is_greeting:
+        is_how_are_you = any(
+            w in question_text for w in ["how are you", "how's it going", "how are you doing", "what's up"]
+        )
+
+        is_thanks = any(
+            w in question_text for w in ["thank you", "thanks", "thx", "appreciate it"]
+        )
+
+        if is_how_are_you:
             content = (
-                "Hello! 👋 I'm **The Lenny Growth Assistant**.\n\n"
-                "I synthesize battle-tested frameworks and execution tactics grounded across 272+ episodes of Lenny's Podcast.\n\n"
-                "Here are some great questions you can ask me:\n"
-                "- **Activation & Onboarding**: *How do I guide users to their 'Aha!' moment?*\n"
-                "- **Retention & Churn**: *What are effective compounding growth loops?*\n"
-                "- **Product-Market Fit**: *What are the leading indicators of PMF?*\n"
-                "- **Experimentation**: *How should I prioritize growth experiments?*\n\n"
-                "You can also use the **Mode selector** below to generate artifacts like an **Action Plan**, **Ship 30 Essay**, or **Checklist**!"
+                "I'm doing great, thanks for asking! 😊 Ready to explore some product strategy, growth tactics, or frameworks from Lenny's Podcast whenever you are. What are you working on today?"
+            )
+        elif is_thanks:
+            content = (
+                "You're very welcome! Let me know if you'd like to dig deeper into any specific episode insights or generate an artifact."
+            )
+        elif is_greeting:
+            content = (
+                "Hey there! 👋 I'm **The Lenny Growth Assistant**.\n\n"
+                "I'm here to help you solve product and growth challenges, grounded in real wisdom from over 270 Lenny's Podcast episodes.\n\n"
+                "You can ask me questions like:\n"
+                "- *What are the three components of activation?*\n"
+                "- *How do I set up sustainable growth loops instead of linear funnels?*\n"
+                "- *What are the leading indicators of Product-Market Fit?*\n\n"
+                "You can also select a specialized mode pill below to generate **Growth Action Plans**, **Ship 30 Essays**, or **Checklists**.\n\n"
+                "What product or growth challenge are you tackling today?"
             )
         elif "growth loop" in question_text or "loops" in question_text:
             content = (

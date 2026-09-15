@@ -24,7 +24,13 @@ class GroundedQAAgent:
         self.pi_agent = PiGroundedAgent(provider=provider)
 
     def run(self, context: AgentContext, retrieval_results: List[RetrievalResult]) -> AgentOutput:
-        # Check if retrieval returned zero evidence or purely unrelated noise
+        from app.agents.skills.router import IntentRouter
+
+        # If user query is a conversational greeting/pleasantry, run naturally through Pi Agent without forcing citations
+        if IntentRouter.is_conversational(context.user_question):
+            return self.pi_agent.run(context=context, retrieval_results=[])
+
+        # For substantive questions: if retrieval returned zero evidence, honestly acknowledge limitation
         if not retrieval_results:
             return AgentOutput(
                 content=UNSUPPORTED_QUESTION_RESPONSE,

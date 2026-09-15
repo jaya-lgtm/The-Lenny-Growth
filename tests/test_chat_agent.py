@@ -155,3 +155,24 @@ def test_post_ingest_endpoint(client, tmp_path, monkeypatch):
     assert data["status"] == "completed"
     assert data["discovered"] >= 1
     assert data["inserted"] >= 1
+
+
+def test_chat_greeting_does_not_force_citations(client, chat_seed_data, monkeypatch):
+    """When query is a casual greeting like 'hi', assistant responds naturally without transcript citations."""
+    session_id = str(chat_seed_data["session"].id)
+
+    from app.providers.cloud import MockLLMProvider
+    monkeypatch.setattr("app.agents.orchestrator.get_llm_provider", lambda name=None: MockLLMProvider())
+
+    res = client.post(
+        "/api/chat",
+        json={"session_id": session_id, "message": "hi"},
+    )
+    assert res.status_code == status.HTTP_200_OK
+    data = res.json()
+    msg = data["message"]
+    assert msg["role"] == "assistant"
+    assert "lenny growth assistant" in msg["content"].lower()
+    assert msg["message_metadata"]["retrieval_count"] == 0
+    assert len(msg["message_metadata"]["sources"]) == 0
+
